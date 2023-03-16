@@ -2,6 +2,7 @@ from django.http import HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from store.models import Product
 from .models import Cart, Cart_item
+from django.core.exceptions import ObjectDoesNotExist
 
 
 def _cart_id(request):
@@ -33,12 +34,13 @@ def add_cart(request, product_id):
     return redirect('cart')
 # Create your views here.
 
+
 def remove_cart(request, product_id):
     cart = Cart.objects.get(cart_id=_cart_id(request))
-    product = get_object_or_404(Product,id=product_id)
-    cart_item = Cart_item.objects.get(product=product,cart=cart)
-    if cart_item.quantity>1:
-        cart_item.quantity-= 1
+    product = get_object_or_404(Product, id=product_id)
+    cart_item = Cart_item.objects.get(product=product, cart=cart)
+    if cart_item.quantity > 1:
+        cart_item.quantity -= 1
         cart_item.save()
     else:
         cart_item.delete()
@@ -47,13 +49,16 @@ def remove_cart(request, product_id):
 
 def remove_cart_item(request, product_id):
     cart = Cart.objects.get(cart_id=_cart_id(request))
-    product = get_object_or_404(Product,id=product_id)
-    cart_item = Cart_item.objects.get(product=product,cart=cart)
+    product = get_object_or_404(Product, id=product_id)
+    cart_item = Cart_item.objects.get(product=product, cart=cart)
     cart_item.delete()
     return redirect('cart')
 
+
 def cart(request, total=0, quantity=0, cart_item=None):
     try:
+        tax = 0
+        grandtotal = 0
         cart = Cart.objects.get(cart_id=_cart_id(request))
         cart_items = Cart_item.objects.filter(cart=cart, is_active=True)
         for cart_item in cart_items:
@@ -61,7 +66,7 @@ def cart(request, total=0, quantity=0, cart_item=None):
             quantity += cart_item.quantity
         tax = (2*total)/100
         grandtotal = tax + total
-    except ObjectNotExist:
+    except ObjectDoesNotExist:
         pass
 
     return render(request, 'store/cart.html', {'total': total, 'quantity': quantity, 'cart_items': cart_items, 'grandtotal': grandtotal, "tax": tax})
