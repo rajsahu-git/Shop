@@ -13,6 +13,11 @@ def _cart_id(request):
 
 
 def add_cart(request, product_id):
+    if request.method == "POST":
+        for item in request.POST:
+            key = item
+            value = request.POST[key]
+            print(key,value)
     product = Product.objects.get(id=product_id)
     try:
         cart = Cart.objects.get(cart_id=_cart_id(request))
@@ -58,9 +63,11 @@ def remove_cart_item(request, product_id):
 def cart(request, total=0, quantity=0, cart_item=None):
     try:
         tax = 0
+        cart_items = 0
         grandtotal = 0
         cart = Cart.objects.get(cart_id=_cart_id(request))
         cart_items = Cart_item.objects.filter(cart=cart, is_active=True)
+        # print(cart_items)
         for cart_item in cart_items:
             total += (cart_item.product.price*cart_item.quantity)
             quantity += cart_item.quantity
