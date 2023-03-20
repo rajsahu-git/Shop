@@ -13,23 +13,25 @@ def _cart_id(request):
 
 
 def add_cart(request, product_id):
+    product = Product.objects.get(id=product_id)
+    product_variation = []
     if request.method == "POST":
         for item in request.POST:
+            
             key = item
             value = request.POST[key]
-            # print(key, value)
-
+            
             try:
-                variation = Variation.objects.get(variation_category__iexact=key, variation_value__iexact=value)
-                print(variation)
+                variationss = Variation.object.get(product, variation_category__iexact=key, variation_value__iexact=value)
+                product_variation.append(variationss)
             except:
-                pass
+                print("hello")
             # try:
             #     variation = Variation.objects.get(variation_category__iexact=key, variation_value__iexact=value)
             #     print(variation)
             # except:
             #     print("hello")
-    product = Product.objects.get(id=product_id)
+    
     try:
         cart = Cart.objects.get(cart_id=_cart_id(request))
     except Cart.DoesNotExist:
@@ -38,11 +40,18 @@ def add_cart(request, product_id):
 
     try:
         cart_item = Cart_item.objects.get(product=product, cart=cart)
+        if len(product_variation)>0:
+            for i in product_variation:
+                cart_item.variations.add(i)
         cart_item.quantity += 1
         cart_item.save()
     except Cart_item.DoesNotExist:
         cart_item = Cart_item.objects.create(
             product=product, quantity=1, cart=cart)
+        if len(product_variation)>0:
+            cart_item.variations.clear()
+            for i in product_variation:
+                cart_item.variations.add(i)
         cart_item.save()
 
     # return HttpResponse(cart_item.quantity)
