@@ -21,7 +21,7 @@ from .views import Home
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('Category/',include('category.urls')),
-    path('Account/',include('accounts.urls')),
+    path('account/',include('accounts.urls')),
     path('store/',include('store.urls')),
     path('cart/',include('cart.urls')),
     path('', Home,name='home')
