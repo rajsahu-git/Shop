@@ -1,10 +1,29 @@
-from django.shortcuts import render
+from django.shortcuts import redirect, render
+
+from accounts.models import Account
 from .forms import RegistrationForm
+from django.contrib import messages
 # Create your views here.
 def register(request):
-    form = RegistrationForm()
+    if request.method == 'POST':
+        form = RegistrationForm(request.POST)
+        if form.is_valid():
+            first_name = form.cleaned_data['first_name']
+            last_name = form.cleaned_data['last_name']
+            phone = form.cleaned_data['phone']
+            email = form.cleaned_data['email']
+            password = form.cleaned_data['password']
+            username = email.split('@')[0]
+
+            user = Account.objects.create_user(first_name=first_name, last_name=last_name, email=email, username=username,password=password)
+            user.phone = phone
+            user.save()
+            messages.success(request,'Registration Success')
+            return redirect('register')
+    else:
+        form = RegistrationForm()
     context = {
-        'form':form
+        'form':form,
     }
     return render(request, 'accounts/register.html', context)
 
